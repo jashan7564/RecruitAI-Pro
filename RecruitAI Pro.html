@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecruitAI Pro — Visual Resume Screening</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c10;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --surface3: #21212e;
+  --border: #2a2a3a;
+  --border2: #353548;
+  --text: #e8e6f0;
+  --text2: #8a8aa0;
+  --text3: #5a5a70;
+  --accent: #7c5cfc;
+  --accent2: #a78bfa;
+  --accent-glow: rgba(124,92,252,0.3);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.15);
+  --cyan: #06b6d4;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* HEADER */
+header {
+  padding: 1.2rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(12,12,16,0.95);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--accent2);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-left: 0.2rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-btn {
+  padding: 0.5rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.header-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.header-btn .count-badge {
+  background: var(--accent);
+  color: white;
+  border-radius: 10px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+}
+
+/* TABS */
+.tabs-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+  gap: 0;
+  background: var(--surface);
+}
+
+.tab-btn {
+  padding: 0.9rem 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+/* MAIN CONTENT */
+.content { position: relative; z-index: 1; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* SCREENER TAB */
+.screener-layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-head {
+  padding: 1rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.card-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--accent2);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: rgba(124,92,252,0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  border: 1px solid rgba(124,92,252,0.2);
+}
+
+.card-body { padding: 1.3rem; }
+
+/* FORM */
+label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 0.4rem;
+}
+
+input[type="text"], textarea, select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.7rem 0.9rem;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+}
+input[type="text"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.field { margin-bottom: 1rem; }
+
+/* RESUME UPLOAD AREA */
+.resume-section { margin-top: 1.2rem; }
+
+.resume-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.mini-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border2);
+  background: none;
+  color: var(--accent2);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mini-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* UPLOAD DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 6px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(124,92,252,0.05);
+}
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.drop-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.drop-text { font-size: 0.82rem; color: var(--text2); }
+.drop-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text3); margin-top: 0.3rem; }
+
+/* RESUME LIST */
+.resume-items { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.8rem; }
+
+.resume-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.resume-item:hover { border-color: var(--border2); }
+
+.resume-item-head {
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.resume-type-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.badge-image { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.badge-text { background: rgba(124,92,252,0.15); color: var(--accent2); border: 1px solid rgba(124,92,252,0.3); }
+
+.resume-item-name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  outline: none;
+}
+
+.resume-item-remove {
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.resume-item-remove:hover { background: var(--red-dim); color: var(--red); }
+
+.resume-image-preview {
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  opacity: 0.8;
+}
+
+.resume-text-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  background: var(--bg);
+  border: none;
+  color: var(--text2);
+  min-height: 80px;
+  resize: vertical;
+}
+.resume-text-input:focus { outline: none; }
+
+/* ANALYZE BTN */
+.analyze-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  position: relative;
+  overflow: hidden;
+}
+.analyze-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  pointer-events: none;
+}
+.analyze-btn:hover {
+  background: #6d4de8;
+  box-shadow: 0 6px 30px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* PROGRESS BAR (NEW) */
+.analysis-progress {
+  display: none;
+  margin-top: 0.8rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+}
+.progress-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+.progress-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* RIGHT PANEL */
+.results-area { min-height: 400px; }
+
+/* EMPTY STATE */
+.empty-state {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text3);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+.empty-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  color: var(--text2);
+  margin-bottom: 0.5rem;
+}
+.empty-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7; }
+
+/* LOADING */
+.loading-state { padding: 3rem 2rem; text-align: center; }
+.loading-orbs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.orb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: orb-wave 1.4s ease-in-out infinite;
+}
+.orb:nth-child(2) { animation-delay: 0.2s; background: var(--accent2); }
+.orb:nth-child(3) { animation-delay: 0.4s; background: var(--cyan); }
+.orb:nth-child(4) { animation-delay: 0.6s; background: var(--accent2); }
+.orb:nth-child(5) { animation-delay: 0.8s; background: var(--accent); }
+
+@keyframes orb-wave {
+  0%, 100% { transform: scale(0.6); opacity: 0.3; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+.loading-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+}
+
+/* RESULTS STATS BAR */
+.results-stats {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  flex-wrap: wrap;
+}
+
+.stat-item { text-align: center; }
+.stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.accent { color: var(--accent2); }
+.stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.divider-v {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+}
+
+.results-filters {
+  margin-left: auto;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.filter-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-pill:hover, .filter-pill.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* CANDIDATE CARDS GRID */
+.candidates-grid {
+  padding: 1.3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.cand-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  animation: card-in 0.5s ease both;
+  cursor: pointer;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cand-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  border-color: var(--border2);
+}
+.cand-card.shortlisted { border-color: rgba(34,197,94,0.4); }
+.cand-card.shortlisted:hover { border-color: var(--green); box-shadow: 0 12px 40px rgba(34,197,94,0.15); }
+.cand-card.rejected { opacity: 0.65; }
+
+.card-score-bar { height: 3px; background: var(--border); }
+.card-score-fill {
+  height: 100%;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1) 0.3s;
+}
+
+.card-header {
+  padding: 1rem 1.1rem 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface3);
+  border: 2px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+.card-exp {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  margin-top: 0.2rem;
+  letter-spacing: 0.05em;
+}
+
+.score-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-align: right;
+  flex-shrink: 0;
+}
+.score-pct { font-size: 1rem; opacity: 0.5; }
+.score-sublbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.verdict-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  margin: 0 1.1rem 0.7rem;
+}
+.verdict-chip.shortlisted { background: var(--green-dim); color: var(--green); }
+.verdict-chip.rejected { background: var(--red-dim); color: var(--red); }
+
+.skills-section { padding: 0 1.1rem 0.8rem; }
+.skills-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.skill-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  padding: 0.18rem 0.5rem;
+  border-radius: 3px;
+}
+.skill-chip.match { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.skill-chip.miss { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+.card-summary {
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--text2);
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--cyan);
+  background: rgba(6,182,212,0.1);
+  border: 1px solid rgba(6,182,212,0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  margin: 0 1.1rem 0.6rem;
+}
+
+/* ERROR BOX */
+.error-box {
+  margin: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--red-dim);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--red);
+  line-height: 1.6;
+  display: none;
+}
+.error-box.visible { display: block; }
+
+/* RATE LIMIT BANNER (NEW) */
+.rate-limit-banner {
+  display: none;
+  margin: 1.5rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.4);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.rate-limit-banner.visible { display: block; }
+.rate-limit-banner .rl-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+  font-family: 'Outfit', sans-serif;
+}
+.rate-limit-banner .rl-body { color: var(--text2); }
+.rate-limit-banner .rl-reset { color: var(--gold); margin-top: 0.4rem; }
+.rate-limit-banner .rl-tip {
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  color: var(--text3);
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(245,158,11,0.2);
+}
+
+/* PARTIAL RESULTS NOTICE (NEW) */
+.partial-notice {
+  display: none;
+  margin: 0 1.3rem 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--gold);
+}
+.partial-notice.visible { display: block; }
+
+/* HISTORY TAB */
+#history-tab {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.history-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.08em;
+}
+
+.clear-history-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(239,68,68,0.3);
+  background: none;
+  color: var(--red);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.clear-history-btn:hover { background: var(--red-dim); }
+
+.history-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+.history-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+.history-sessions { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.session-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: card-in 0.4s ease both;
+}
+
+.session-head {
+  padding: 1rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-role {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.session-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+.session-stats {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.sess-stat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+}
+.sess-stat.green { background: var(--green-dim); color: var(--green); }
+.sess-stat.red { background: var(--red-dim); color: var(--red); }
+.sess-stat.neutral { background: var(--surface3); color: var(--text2); }
+
+.session-expand-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  border-radius: 4px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.session-expand-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+.session-body {
+  display: none;
+  padding: 1.2rem;
+}
+.session-body.open { display: block; }
+
+.session-jd {
+  font-size: 0.8rem;
+  color: var(--text2);
+  line-height: 1.6;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.8rem 1rem;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 1.2rem;
+  white-space: pre-wrap;
+}
+
+.session-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.mini-cand-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.8rem;
+}
+.mini-cand-card.shortlisted { border-color: rgba(34,197,94,0.3); }
+.mini-cand-card.rejected { opacity: 0.6; }
+
+.mini-cand-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.mini-cand-name { font-weight: 600; font-size: 0.82rem; }
+.mini-cand-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.mini-cand-score.green { color: var(--green); }
+.mini-cand-score.gold { color: var(--gold); }
+.mini-cand-score.red { color: var(--red); }
+.mini-cand-verdict {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mini-cand-verdict.shortlisted { color: var(--green); }
+.mini-cand-verdict.rejected { color: var(--red); }
+
+/* SPINNER */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+@media (max-width: 900px) {
+  .screener-layout { grid-template-columns: 1fr; }
+  header { padding: 1rem 1.5rem; }
+  .tabs-bar { padding: 0 1.5rem; }
+  .results-filters { margin-left: 0; margin-top: 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⬡</div>
+    RecruitAI<span style="color:var(--accent)">Pro</span>
+    <span class="logo-sub">v2.1</span>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="switchTab('history')">
+      📋 History <span class="count-badge" id="history-count">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" id="tab-screener" onclick="switchTab('screener')">
+    ✦ Resume Screener
+  </button>
+  <button class="tab-btn" id="tab-history" onclick="switchTab('history')">
+    ◷ Analysis History
+  </button>
+</div>
+
+<div class="content">
+
+  <!-- SCREENER TAB -->
+  <div class="tab-panel active" id="screener-tab">
+    <div class="screener-layout">
+
+      <!-- LEFT: INPUTS -->
+      <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+        <!-- Job Description Card -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Job Description</span>
+            <span class="card-tag">Step 01</span>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>Role Title</label>
+              <input type="text" id="role-title" placeholder="e.g. Senior Frontend Engineer" value="Senior Frontend Engineer">
+            </div>
+            <div class="field">
+              <label>Job Description</label>
+              <textarea id="job-desc" rows="9" placeholder="Paste the full job description here...">We are looking for a Senior Frontend Engineer with 5+ years of experience.
+
+Required Skills:
+- React.js, TypeScript, JavaScript (ES6+)
+- CSS3, HTML5, Tailwind CSS
+- RESTful APIs and GraphQL
+- Git, CI/CD pipelines
+- Performance optimization and accessibility
+
+Responsibilities:
+- Lead frontend architecture decisions
+- Build reusable component libraries
+- Mentor junior developers
+
+Nice to have:
+- Next.js, Vue.js
+- Jest, Cypress testing
+- Node.js fundamentals</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumes Card -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Candidate Resumes</span>
+            <span class="card-tag">Step 02</span>
+          </div>
+          <div class="card-body">
+
+            <!-- Drop Zone -->
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" id="image-upload" accept="image/*" multiple onchange="handleFileUpload(event)">
+              <div class="drop-icon">📄</div>
+              <div class="drop-text">Drop resume images here or click to upload</div>
+              <div class="drop-sub">PNG, JPG, WEBP supported · Multiple files OK</div>
+            </div>
+
+            <div class="resume-section">
+              <div class="resume-section-header">
+                <span class="section-label">Candidates <span id="resume-count-label" style="color:var(--accent2);margin-left:0.3rem;">0</span></span>
+                <button class="mini-btn" onclick="addTextResume()">+ Add Text</button>
+              </div>
+              <div class="resume-items" id="resume-items"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <button class="analyze-btn" id="analyze-btn" onclick="analyzeResumes()">
+          <span>✦ Analyze &amp; Shortlist</span>
+        </button>
+
+        <!-- Progress bar (shown during analysis) -->
+        <div class="analysis-progress" id="analysis-progress">
+          <div class="progress-label">
+            <span id="progress-text">Starting...</span>
+            <span id="progress-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: RESULTS -->
+      <div class="card results-area" id="results-card">
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">◎</div>
+          <div class="empty-title">Ready to Screen</div>
+          <div class="empty-sub">Add a job description and candidate resumes,<br>then hit Analyze to get AI-powered results.</div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state" style="display:none;">
+          <div class="loading-orbs">
+            <div class="orb"></div><div class="orb"></div><div class="orb"></div>
+            <div class="orb"></div><div class="orb"></div>
+          </div>
+          <div class="loading-msg" id="loading-msg">Initializing analysis engine...</div>
+        </div>
+
+        <!-- Rate Limit Banner -->
+        <div class="rate-limit-banner" id="rate-limit-banner">
+          <div class="rl-title">⏳ API Rate Limit Reached</div>
+          <div class="rl-body" id="rl-body">Your Anthropic API usage quota has been exceeded for this period.</div>
+          <div class="rl-reset" id="rl-reset"></div>
+          <div class="rl-tip">
+            💡 Tips: Reduce the number of resumes per batch · Wait for the quota to reset · 
+            Upgrade your <a href="https://console.anthropic.com" target="_blank" rel="noopener" 
+            style="color:var(--gold);text-decoration:underline;">Anthropic plan</a> for higher limits.
+          </div>
+        </div>
+
+        <!-- Generic Error -->
+        <div class="error-box" id="error-box"></div>
+
+        <!-- Results -->
+        <div id="results-area" style="display:none;">
+          <div class="results-stats" id="results-stats"></div>
+          <div class="partial-notice" id="partial-notice"></div>
+          <div class="candidates-grid" id="candidates-grid"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="tab-panel" id="history-tab">
+    <div style="max-width:1100px;margin:0 auto;padding:2rem 2.5rem;">
+      <div class="history-header">
+        <div class="history-title">Analysis History</div>
+        <button class="clear-history-btn" onclick="clearHistory()">✕ Clear All History</button>
+      </div>
+      <div id="history-container"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let resumeItems = []; // { id, type: 'image'|'text', name, imageBase64?, mediaType?, text? }
+let itemCounter = 0;
+
+// FIX 1: Safe localStorage access — crashes silently in some private/iframe contexts
+let analysisHistory = [];
+try {
+  analysisHistory = JSON.parse(localStorage.getItem('recruitai_history') || '[]');
+} catch(e) {
+  console.warn('Could not load history from localStorage:', e);
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab + '-tab').classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'history') renderHistory();
+}
+
+// ============================================================
+// FILE UPLOAD
+// ============================================================
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFileUpload(e) { handleFiles(e.target.files); }
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    // FIX 2: Removed .pdf accept from file input — Anthropic vision API only supports images,
+    // not raw PDFs. Silently dropping non-image files with a clear check:
+    if (!file.type.startsWith('image/')) {
+      alert(`"${file.name}" is not an image file. Please upload PNG, JPG, or WEBP only.`);
+      return;
+    }
+
+    // FIX 3: Warn about very large images before they're sent (>4MB is wasteful/slow)
+    const MAX_MB = 4;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      if (!confirm(`"${file.name}" is ${(file.size/1024/1024).toFixed(1)}MB. Large images slow down analysis. Continue anyway?`)) return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      const mediaType = file.type;
+      const id = ++itemCounter;
+      // FIX 4: Sanitize the candidate name extracted from filename
+      const name = sanitizeName(file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '));
+      resumeItems.push({ id, type: 'image', name, imageBase64: base64, mediaType });
+      renderResumeItems();
+    };
+    reader.onerror = () => alert(`Failed to read file: ${file.name}`);
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('image-upload').value = '';
+}
+
+// FIX 5: XSS prevention — escape HTML in user-provided strings before injecting into innerHTML
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function sanitizeName(name) {
+  return (name || '').slice(0, 80).trim() || 'Unnamed Candidate';
+}
+
+// ============================================================
+// TEXT RESUME
+// ============================================================
+function addTextResume(name = '', text = '') {
+  const id = ++itemCounter;
+  resumeItems.push({ id, type: 'text', name: name || `Candidate ${id}`, text: text });
+  renderResumeItems();
+}
+
+// ============================================================
+// RENDER RESUME ITEMS
+// ============================================================
+function renderResumeItems() {
+  const container = document.getElementById('resume-items');
+  container.innerHTML = '';
+  document.getElementById('resume-count-label').textContent = resumeItems.length;
+
+  resumeItems.forEach((item) => {
+    const div = document.createElement('div');
+    div.className = 'resume-item';
+    div.id = `item-${item.id}`;
+
+    const typeLabel = item.type === 'image'
+      ? '<span class="resume-type-badge badge-image">📷 Image</span>'
+      : '<span class="resume-type-badge badge-text">✎ Text</span>';
+
+    // FIX 6: Use createElement for body to avoid XSS in image src & textarea content
+    const headDiv = document.createElement('div');
+    headDiv.className = 'resume-item-head';
+    headDiv.innerHTML = typeLabel;
+
+    const nameInput = document.createElement('input');
+    nameInput.className = 'resume-item-name';
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Candidate Name';
+    nameInput.value = item.name;
+    nameInput.addEventListener('input', () => updateItemName(item.id, nameInput.value));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'resume-item-remove';
+    removeBtn.textContent = '×';
+    removeBtn.setAttribute('aria-label', 'Remove candidate');
+    removeBtn.addEventListener('click', () => removeItem(item.id));
+
+    headDiv.appendChild(nameInput);
+    headDiv.appendChild(removeBtn);
+    div.appendChild(headDiv);
+
+    if (item.type === 'image') {
+      const img = document.createElement('img');
+      img.src = item.imageBase64;
+      img.className = 'resume-image-preview';
+      img.alt = `Resume preview for ${item.name}`;
+      div.appendChild(img);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.className = 'resume-text-input';
+      ta.rows = 5;
+      ta.placeholder = 'Paste resume text here...';
+      ta.value = item.text || '';
+      ta.addEventListener('input', () => updateItemText(item.id, ta.value));
+      div.appendChild(ta);
+    }
+
+    container.appendChild(div);
+  });
+}
+
+function updateItemName(id, val) {
+  const item = resumeItems.find(r => r.id === id);
+  if (item) item.name = sanitizeName(val);
+}
+
+function updateItemText(id, val) {
+  const item = resumeItems.find(r => r.id === id);
+  if (item) item.text = val;
+}
+
+function removeItem(id) {
+  resumeItems = resumeItems.filter(r => r.id !== id);
+  renderResumeItems();
+}
+
+// ============================================================
+// PROGRESS HELPERS
+// ============================================================
+function setProgress(current, total) {
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+function showProgress(text, current, total) {
+  document.getElementById('analysis-progress').style.display = 'block';
+  document.getElementById('progress-text').textContent = text;
+  setProgress(current, total);
+}
+
+function hideProgress() {
+  document.getElementById('analysis-progress').style.display = 'none';
+  setProgress(0, 1);
+}
+
+// ============================================================
+// ANALYZE  — FIX 7: Sequential processing, not Promise.all
+// ============================================================
+async function analyzeResumes() {
+  const jobTitle = document.getElementById('role-title').value.trim();
+  const jobDesc = document.getElementById('job-desc').value.trim();
+
+  if (!jobDesc) { alert('Please enter a job description.'); return; }
+  if (resumeItems.length === 0) { alert('Please add at least one candidate resume.'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+
+  // Reset UI
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('results-area').style.display = 'none';
+  document.getElementById('error-box').classList.remove('visible');
+  document.getElementById('rate-limit-banner').classList.remove('visible');
+  document.getElementById('partial-notice').classList.remove('visible');
+  showProgress('Preparing...', 0, resumeItems.length);
+
+  const results = [];
+  let rateLimitHit = false;
+  let rateLimitResetAt = null;
+
+  // FIX 7: Sequential — one at a time with 400ms gap to avoid burst rate-limiting
+  for (let i = 0; i < resumeItems.length; i++) {
+    const item = resumeItems[i];
+    const label = `Analyzing ${escapeHtml(item.name)} (${i + 1}/${resumeItems.length})`;
+    document.getElementById('loading-msg').textContent = label;
+    showProgress(label, i, resumeItems.length);
+
+    try {
+      const result = await analyzeOne(item, jobTitle, jobDesc);
+      results.push(result);
+    } catch (err) {
+      // FIX 8: Detect rate-limit errors specifically and stop loop — don't keep hammering
+      if (err.isRateLimit) {
+        rateLimitHit = true;
+        rateLimitResetAt = err.resetsAt;
+        break;
+      }
+      // For other errors on individual candidates, push a failure placeholder
+      results.push({
+        name: item.name,
+        score: 0,
+        verdict: 'rejected',
+        matchedSkills: [],
+        missingSkills: [],
+        experienceYears: 0,
+        summary: `Analysis failed: ${err.message}`,
+        sourceType: item.type,
+        analysisError: true
+      });
+    }
+
+    // Small delay between requests
+    if (i < resumeItems.length - 1) {
+      await new Promise(r => setTimeout(r, 400));
+    }
+  }
+
+  document.getElementById('loading-state').style.display = 'none';
+  hideProgress();
+  btn.disabled = false;
+  btn.innerHTML = '<span>✦ Analyze &amp; Shortlist</span>';
+
+  // Show rate limit banner if hit
+  if (rateLimitHit) {
+    const banner = document.getElementById('rate-limit-banner');
+    banner.classList.add('visible');
+    const resetMsg = rateLimitResetAt
+      ? `Your quota resets at ${new Date(rateLimitResetAt * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`
+      : 'Please wait for your quota to reset.';
+    document.getElementById('rl-body').textContent =
+      `Anthropic API rate limit hit after processing ${results.length} of ${resumeItems.length} candidate(s).`;
+    document.getElementById('rl-reset').textContent = '⏰ ' + resetMsg;
+  }
+
+  if (results.length === 0) return;
+
+  // Sort by score descending
+  results.sort((a, b) => b.score - a.score);
+
+  renderResults(results, jobTitle, jobDesc);
+  saveToHistory(jobTitle, jobDesc, results);
+
+  // Show partial results notice if we didn't finish all candidates
+  if (rateLimitHit && results.length < resumeItems.length) {
+    const notice = document.getElementById('partial-notice');
+    notice.textContent = `⚠ Partial results: ${results.length} of ${resumeItems.length} candidates analyzed before rate limit.`;
+    notice.classList.add('visible');
+  }
+}
+
+// ============================================================
+// analyzeOne — FIX 8: Structured error detection
+// ============================================================
+async function analyzeOne(item, jobTitle, jobDesc) {
+  let messageContent = [];
+
+  if (item.type === 'image') {
+    const base64Data = item.imageBase64.split(',')[1];
+    messageContent = [
+      {
+        type: 'image',
+        source: { type: 'base64', media_type: item.mediaType, data: base64Data }
+      },
+      {
+        type: 'text',
+        text: buildPrompt(item.name, '', jobTitle, jobDesc, true)
+      }
+    ];
+  } else {
+    messageContent = [
+      {
+        type: 'text',
+        text: buildPrompt(item.name, item.text || '', jobTitle, jobDesc, false)
+      }
+    ];
+  }
+
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: messageContent }]
+      })
+    });
+  } catch (networkErr) {
+    // Network error (offline, CORS, etc.)
+    throw new Error(`Network error: ${networkErr.message}`);
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // FIX 8a: Rate limit / quota exceeded — top-level "type" field (not nested in "error")
+    if (data.type === 'exceeded_limit' || response.status === 429) {
+      const err = new Error('API rate limit reached');
+      err.isRateLimit = true;
+      err.resetsAt = data.resetsAt || null;
+      throw err;
+    }
+
+    // FIX 8b: Auth error — bad/missing API key
+    if (response.status === 401) {
+      throw new Error('Invalid or missing API key. Check your Anthropic credentials.');
+    }
+
+    // FIX 8c: Context-length exceeded for this single resume
+    if (response.status === 413 || (data.error?.type === 'invalid_request_error' && data.error?.message?.includes('too long'))) {
+      throw new Error(`Resume content too long for API. Try a shorter text or smaller image.`);
+    }
+
+    // Generic API error
+    throw new Error(data.error?.message || `API error ${response.status}`);
+  }
+
+  // FIX 9: Validate response structure before parsing
+  if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+    throw new Error('Empty response from API');
+  }
+
+  const raw = data.content.map(b => b.text || '').join('').trim();
+
+  // FIX 10: Strip markdown code fences more robustly (handles ```json, ```, and leading/trailing whitespace)
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (parseErr) {
+    // FIX 11: If JSON parse fails, try to extract JSON object from surrounding text
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        parsed = JSON.parse(jsonMatch[0]);
+      } catch {
+        throw new Error(`Could not parse AI response as JSON. Raw: ${cleaned.slice(0, 100)}`);
+      }
+    } else {
+      throw new Error(`Invalid JSON in AI response: ${cleaned.slice(0, 100)}`);
+    }
+  }
+
+  // FIX 12: Validate and clamp returned values to prevent rendering issues
+  parsed.score = Math.max(0, Math.min(100, parseInt(parsed.score) || 0));
+  parsed.experienceYears = Math.max(0, Math.min(50, parseInt(parsed.experienceYears) || 0));
+  parsed.verdict = parsed.verdict === 'shortlisted' ? 'shortlisted' : 'rejected';
+  parsed.matchedSkills = Array.isArray(parsed.matchedSkills) ? parsed.matchedSkills.slice(0, 6) : [];
+  parsed.missingSkills = Array.isArray(parsed.missingSkills) ? parsed.missingSkills.slice(0, 4) : [];
+  parsed.name = (typeof parsed.name === 'string' && parsed.name.trim()) ? parsed.name.trim() : item.name;
+  parsed.summary = typeof parsed.summary === 'string' ? parsed.summary : '';
+  parsed.strengths = typeof parsed.strengths === 'string' ? parsed.strengths : '';
+
+  parsed.sourceType = item.type;
+  if (item.type === 'image') parsed.thumbnailUrl = item.imageBase64;
+
+  return parsed;
+}
+
+// ============================================================
+// PROMPT — FIX 13: Truncate huge text resumes to avoid context-length errors
+// ============================================================
+function buildPrompt(name, text, jobTitle, jobDesc, isImage) {
+  const MAX_TEXT_CHARS = 6000;
+  const truncatedText = text.length > MAX_TEXT_CHARS
+    ? text.slice(0, MAX_TEXT_CHARS) + '\n[... resume truncated for length ...]'
+    : text;
+
+  const source = isImage
+    ? "The candidate's resume is provided as an image above. Extract all relevant information from it."
+    : `RESUME TEXT:\n${truncatedText}`;
+
+  return `You are an expert HR recruiter. Analyze this resume against the job description. Return ONLY valid JSON — no markdown, no commentary, no explanation.
+
+CANDIDATE NAME HINT: ${name}
+JOB TITLE: ${jobTitle}
+JOB DESCRIPTION:
+${jobDesc}
+
+${source}
+
+Return ONLY a JSON object with these exact fields:
+- "name": candidate's actual full name from resume, or "${name}" if not clearly found (string)
+- "score": integer 0-100 representing match quality with job requirements
+- "verdict": exactly "shortlisted" if score >= 65, else exactly "rejected"
+- "matchedSkills": array of up to 6 short strings — skills from JD this candidate clearly has
+- "missingSkills": array of up to 4 short strings — important JD skills this candidate lacks
+- "experienceYears": integer — estimated years of relevant professional experience
+- "summary": string — 2-sentence hiring assessment explaining score and key factors
+- "strengths": string — one key differentiating strength phrase`;
+}
+
+// ============================================================
+// RENDER RESULTS — FIX 14: Use textContent/escapeHtml to prevent XSS
+// ============================================================
+function renderResults(candidates, jobTitle, jobDesc) {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('results-area').style.display = 'block';
+
+  const shortlisted = candidates.filter(c => c.verdict === 'shortlisted').length;
+  const rejected = candidates.length - shortlisted;
+  const avg = Math.round(candidates.reduce((s, c) => s + c.score, 0) / candidates.length);
+
+  document.getElementById('results-stats').innerHTML = `
+    <div class="stat-item">
+      <div class="stat-val accent">${candidates.length}</div>
+      <div class="stat-lbl">Total</div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="stat-item">
+      <div class="stat-val green">${shortlisted}</div>
+      <div class="stat-lbl">Shortlisted</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val red">${rejected}</div>
+      <div class="stat-lbl">Rejected</div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="stat-item">
+      <div class="stat-val" style="color:var(--gold)">${avg}%</div>
+      <div class="stat-lbl">Avg Score</div>
+    </div>
+    <div class="results-filters" style="margin-left:auto;">
+      <button class="filter-pill active" onclick="filterCands('all',this)">All</button>
+      <button class="filter-pill" onclick="filterCands('shortlisted',this)">Shortlisted</button>
+      <button class="filter-pill" onclick="filterCands('rejected',this)">Rejected</button>
+    </div>
+  `;
+
+  const grid = document.getElementById('candidates-grid');
+  grid.innerHTML = '';
+
+  candidates.forEach((c, i) => {
+    const scoreColor = c.score >= 75 ? 'var(--green)' : c.score >= 50 ? 'var(--gold)' : 'var(--red)';
+    const barColor = scoreColor;
+
+    const card = document.createElement('div');
+    card.className = `cand-card ${c.verdict}`;
+    card.dataset.verdict = c.verdict;
+    card.style.animationDelay = `${i * 0.07}s`;
+
+    // Score bar
+    const scoreBar = document.createElement('div');
+    scoreBar.className = 'card-score-bar';
+    const scoreFill = document.createElement('div');
+    scoreFill.className = 'card-score-fill';
+    scoreFill.style.width = '0%';
+    scoreFill.style.background = barColor;
+    scoreFill.dataset.width = c.score + '%';
+    scoreBar.appendChild(scoreFill);
+    card.appendChild(scoreBar);
+
+    // Header
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
+
+    const leftSide = document.createElement('div');
+    leftSide.style.cssText = 'display:flex;align-items:flex-start;gap:0.7rem;';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'card-avatar';
+    if (c.thumbnailUrl) {
+      const img = document.createElement('img');
+      img.src = c.thumbnailUrl;
+      img.alt = '';
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = (c.name || '?').charAt(0).toUpperCase();
+    }
+    leftSide.appendChild(avatar);
+
+    const nameBlock = document.createElement('div');
+    const nameEl = document.createElement('div');
+    nameEl.className = 'card-name';
+    nameEl.textContent = c.name || 'Unknown';  // textContent = safe
+    const expEl = document.createElement('div');
+    expEl.className = 'card-exp';
+    expEl.textContent = `${c.experienceYears || '?'} yrs experience`;
+    nameBlock.appendChild(nameEl);
+    nameBlock.appendChild(expEl);
+    leftSide.appendChild(nameBlock);
+
+    const scoreBlock = document.createElement('div');
+    const scoreNum = document.createElement('div');
+    scoreNum.className = 'score-num';
+    scoreNum.style.color = scoreColor;
+    scoreNum.textContent = c.score;
+    const scorePct = document.createElement('span');
+    scorePct.className = 'score-pct';
+    scorePct.textContent = '%';
+    scoreNum.appendChild(scorePct);
+    const scoreLbl = document.createElement('div');
+    scoreLbl.className = 'score-sublbl';
+    scoreLbl.textContent = 'match';
+    scoreBlock.appendChild(scoreNum);
+    scoreBlock.appendChild(scoreLbl);
+
+    cardHeader.appendChild(leftSide);
+    cardHeader.appendChild(scoreBlock);
+    card.appendChild(cardHeader);
+
+    // Verdict chip
+    const chip = document.createElement('div');
+    chip.className = `verdict-chip ${c.verdict}`;
+    chip.textContent = c.verdict === 'shortlisted' ? '✦ Shortlisted' : '✕ Rejected';
+    card.appendChild(chip);
+
+    // Source badge
+    if (c.sourceType === 'image') {
+      const src = document.createElement('div');
+      src.className = 'source-chip';
+      src.textContent = '📷 Scanned from image';
+      card.appendChild(src);
+    }
+
+    // Skills
+    const hasSkills = (c.matchedSkills && c.matchedSkills.length) || (c.missingSkills && c.missingSkills.length);
+    if (hasSkills) {
+      const skillsSection = document.createElement('div');
+      skillsSection.className = 'skills-section';
+      const skillsRow = document.createElement('div');
+      skillsRow.className = 'skills-row';
+      (c.matchedSkills || []).forEach(s => {
+        const chip = document.createElement('span');
+        chip.className = 'skill-chip match';
+        chip.textContent = '✓ ' + s;
+        skillsRow.appendChild(chip);
+      });
+      (c.missingSkills || []).forEach(s => {
+        const chip = document.createElement('span');
+        chip.className = 'skill-chip miss';
+        chip.textContent = '✗ ' + s;
+        skillsRow.appendChild(chip);
+      });
+      skillsSection.appendChild(skillsRow);
+      card.appendChild(skillsSection);
+    }
+
+    // Summary
+    if (c.summary) {
+      const summary = document.createElement('div');
+      summary.className = 'card-summary';
+      summary.textContent = c.summary;  // textContent = safe, no XSS
+      card.appendChild(summary);
+    }
+
+    grid.appendChild(card);
+
+    // Animate score bar
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        scoreFill.style.width = scoreFill.dataset.width;
+      }, 100 + i * 70);
+    });
+  });
+}
+
+function filterCands(type, btn) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cand-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.verdict === type) ? '' : 'none';
+  });
+}
+
+// ============================================================
+// HISTORY — FIX 15: Safe localStorage writes + size guard
+// ============================================================
+function saveToHistory(jobTitle, jobDesc, candidates) {
+  const session = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    jobTitle,
+    jobDesc,
+    candidates: candidates.map(c => ({
+      name: c.name,
+      score: c.score,
+      verdict: c.verdict,
+      experienceYears: c.experienceYears,
+      matchedSkills: c.matchedSkills,
+      missingSkills: c.missingSkills,
+      summary: c.summary,
+      sourceType: c.sourceType
+      // FIX 15a: Do NOT save thumbnailUrl (base64 images) to localStorage — quickly fills 5MB quota
+    }))
+  };
+
+  analysisHistory.unshift(session);
+  if (analysisHistory.length > 50) analysisHistory = analysisHistory.slice(0, 50);
+
+  try {
+    localStorage.setItem('recruitai_history', JSON.stringify(analysisHistory));
+  } catch (e) {
+    // FIX 15b: Handle localStorage quota exceeded
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      // Trim history and retry
+      analysisHistory = analysisHistory.slice(0, 10);
+      try {
+        localStorage.setItem('recruitai_history', JSON.stringify(analysisHistory));
+      } catch(e2) {
+        console.warn('Could not save to localStorage even after trimming:', e2);
+      }
+    }
+  }
+
+  updateHistoryBadge();
+}
+
+function updateHistoryBadge() {
+  document.getElementById('history-count').textContent = analysisHistory.length;
+}
+
+function clearHistory() {
+  if (!confirm('Clear all analysis history?')) return;
+  analysisHistory = [];
+  try { localStorage.removeItem('recruitai_history'); } catch(e) {}
+  updateHistoryBadge();
+  renderHistory();
+}
+
+// ============================================================
+// RENDER HISTORY — FIX 16: Use textContent to prevent XSS
+// ============================================================
+function renderHistory() {
+  const container = document.getElementById('history-container');
+
+  if (analysisHistory.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <div class="history-empty-icon">◷</div>
+        <div>No analysis history yet.</div>
+        <div style="margin-top:0.4rem;color:var(--text3)">Run a screening to see sessions here.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  analysisHistory.forEach((session) => {
+    const shortlisted = session.candidates.filter(c => c.verdict === 'shortlisted').length;
+    const rejected = session.candidates.length - shortlisted;
+    const dt = new Date(session.timestamp);
+    const timeStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+                    ' · ' + dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const sessionEl = document.createElement('div');
+    sessionEl.className = 'session-card';
+
+    // Head
+    const head = document.createElement('div');
+    head.className = 'session-head';
+
+    const meta = document.createElement('div');
+    meta.className = 'session-meta';
+
+    const role = document.createElement('div');
+    role.className = 'session-role';
+    role.textContent = session.jobTitle || 'Unnamed Role';
+
+    const time = document.createElement('div');
+    time.className = 'session-time';
+    time.textContent = '◷ ' + timeStr;
+
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'session-stats';
+    statsDiv.innerHTML = `
+      <span class="sess-stat neutral">${session.candidates.length} candidates</span>
+      <span class="sess-stat green">↑ ${shortlisted} shortlisted</span>
+      <span class="sess-stat red">↓ ${rejected} rejected</span>
+    `;
+
+    meta.appendChild(role);
+    meta.appendChild(time);
+    meta.appendChild(statsDiv);
+
+    const expandBtn = document.createElement('button');
+    expandBtn.className = 'session-expand-btn';
+    expandBtn.textContent = 'View Details ▾';
+    expandBtn.addEventListener('click', () => toggleSession(session.id));
+
+    head.appendChild(meta);
+    head.appendChild(expandBtn);
+    sessionEl.appendChild(head);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'session-body';
+    body.id = `sess-body-${session.id}`;
+
+    const jdLabel = document.createElement('div');
+    jdLabel.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:0.62rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;';
+    jdLabel.textContent = 'Job Description';
+
+    const jdBox = document.createElement('div');
+    jdBox.className = 'session-jd';
+    jdBox.textContent = session.jobDesc || '—';
+
+    const candLabel = document.createElement('div');
+    candLabel.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:0.62rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin:1.2rem 0 0.6rem;';
+    candLabel.textContent = 'Candidates';
+
+    const candGrid = document.createElement('div');
+    candGrid.className = 'session-candidates';
+
+    session.candidates.forEach(c => {
+      const sc = c.score >= 75 ? 'green' : c.score >= 50 ? 'gold' : 'red';
+      const miniCard = document.createElement('div');
+      miniCard.className = `mini-cand-card ${c.verdict}`;
+
+      const miniHead = document.createElement('div');
+      miniHead.className = 'mini-cand-head';
+
+      const miniLeft = document.createElement('div');
+      const miniName = document.createElement('div');
+      miniName.className = 'mini-cand-name';
+      miniName.textContent = c.name;
+      const miniVerdict = document.createElement('div');
+      miniVerdict.className = `mini-cand-verdict ${c.verdict}`;
+      miniVerdict.textContent = (c.verdict === 'shortlisted' ? '✦ Shortlisted' : '✕ Rejected') + (c.sourceType === 'image' ? ' · 📷' : '');
+      miniLeft.appendChild(miniName);
+      miniLeft.appendChild(miniVerdict);
+
+      const miniScore = document.createElement('div');
+      miniScore.className = `mini-cand-score ${sc}`;
+      miniScore.textContent = c.score + '%';
+
+      miniHead.appendChild(miniLeft);
+      miniHead.appendChild(miniScore);
+      miniCard.appendChild(miniHead);
+
+      if (c.summary) {
+        const summEl = document.createElement('div');
+        summEl.style.cssText = 'font-size:0.75rem;color:var(--text2);line-height:1.5;margin-top:0.4rem;';
+        summEl.textContent = c.summary;
+        miniCard.appendChild(summEl);
+      }
+
+      candGrid.appendChild(miniCard);
+    });
+
+    const reloadRow = document.createElement('div');
+    reloadRow.style.cssText = 'margin-top:1rem;text-align:right;';
+    const reloadBtn = document.createElement('button');
+    reloadBtn.className = 'mini-btn';
+    reloadBtn.textContent = '↩ Reload this session';
+    reloadBtn.addEventListener('click', () => reloadSession(session.id));
+    reloadRow.appendChild(reloadBtn);
+
+    body.appendChild(jdLabel);
+    body.appendChild(jdBox);
+    body.appendChild(candLabel);
+    body.appendChild(candGrid);
+    body.appendChild(reloadRow);
+
+    sessionEl.appendChild(body);
+    container.appendChild(sessionEl);
+  });
+}
+
+function toggleSession(id) {
+  const body = document.getElementById(`sess-body-${id}`);
+  if (body) body.classList.toggle('open');
+}
+
+function reloadSession(id) {
+  const session = analysisHistory.find(s => s.id === id);
+  if (!session) return;
+  document.getElementById('role-title').value = session.jobTitle || '';
+  document.getElementById('job-desc').value = session.jobDesc || '';
+  switchTab('screener');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateHistoryBadge();
+
+// Sample resumes
+const samples = [
+  {
+    name: 'Aisha Patel',
+    text: `Senior Frontend Engineer with 7 years specializing in React.js and TypeScript.
+SKILLS: React.js, TypeScript, Next.js, GraphQL, REST APIs, Tailwind CSS, Jest, GitHub Actions CI/CD
+EXPERIENCE: Stripe (2020-Present) - Led migration to React+TypeScript, cutting load time 40%. Mentored 4 juniors. Airbnb (2018-2020) - Responsive booking flow, 4M DAU. GraphQL integration.
+EDUCATION: B.S. Computer Science, Stanford 2018`
+  },
+  {
+    name: 'Jordan Rivera',
+    text: `Lead Frontend Architect, 9 years. Expert in micro-frontends and performance.
+SKILLS: React.js, TypeScript, Next.js, Vue.js, Cypress, Playwright, Module Federation, CI/CD, Docker
+EXPERIENCE: Google (2021-Present) - Architected micro-frontend system, 50M+ users. Lead 8-person team. Meta (2019-2021) - Built 3 major component libraries. TypeScript migration 200K+ lines. Shopify (2015-2019) - Storefront theming for 500K+ merchants.
+EDUCATION: M.S. CS MIT 2016, B.Eng Waterloo 2014`
+  },
+  {
+    name: 'Dmitri Volkov',
+    text: `Objective: Seeking a frontend role. I have some HTML, CSS experience and have watched React tutorials.
+SKILLS: HTML, CSS, JavaScript (basic), Photoshop, WordPress, Excel
+EXPERIENCE: Freelance Web Designer 2023-Present. Made websites using HTML/CSS templates. Set up 3 WordPress sites. Data Entry Clerk 2020-2023.
+EDUCATION: High School Diploma 2018. Online HTML/CSS Course Codecademy 2022.`
+  }
+];
+
+samples.forEach(s => addTextResume(s.name, s.text));
+</script>
+
+</body>
+</html>
